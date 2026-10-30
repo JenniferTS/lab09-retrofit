@@ -46,6 +46,18 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    // Corrutinas
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    // Retrofit + Gson para consumir la API
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    // Coil para cargar imagenes desde una URL
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    // Navegacion entre pantallas
+    implementation("androidx.navigation:navigation-compose:2.9.5")
+    // Iconos (Home, Favorite, Search...)
+    implementation("androidx.compose.material:material-icons-core")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
