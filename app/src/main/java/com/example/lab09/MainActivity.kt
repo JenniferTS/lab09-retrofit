@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -28,8 +30,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.lab09.recetas.ScreenReceta
+import com.example.lab09.recetas.ScreenRecetas
 import com.example.lab09.ui.theme.Lab09Theme
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -53,9 +58,11 @@ fun ProgPrincipal9() {
         .addConverterFactory(GsonConverterFactory.create()).build()
     val servicio = retrofit.create(PostApiService::class.java)
     val navController = rememberNavController()
+    val rutaActual = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
-        topBar =    { BarraSuperior() },
+        // Las pantallas de recetas tienen su propio encabezado
+        topBar =    { if (rutaActual?.startsWith("receta") != true) BarraSuperior() },
         bottomBar = { BarraInferior(navController) },
         content =   { paddingValues -> Contenido(paddingValues, navController, servicio) }
     )
@@ -80,20 +87,29 @@ fun BarraSuperior() {
 
 @Composable
 fun BarraInferior(navController: NavHostController) {
+    // currentBackStackEntryAsState hace que la barra se actualice al cambiar de pantalla
+    val ruta = navController.currentBackStackEntryAsState().value?.destination?.route
     NavigationBar(
         containerColor = Color.LightGray
     ) {
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Home, contentDescription = "Inicio") },
             label = { Text("Inicio") },
-            selected = navController.currentDestination?.route == "inicio",
+            selected = ruta == "inicio",
             onClick = { navController.navigate("inicio") }
         )
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Favorite, contentDescription = "Posts") },
             label = { Text("Posts") },
-            selected = navController.currentDestination?.route == "posts",
+            selected = ruta == "posts" || ruta?.startsWith("postsVer") == true,
             onClick = { navController.navigate("posts") }
+        )
+        // Ejercicio 1
+        NavigationBarItem(
+            icon = { Icon(Icons.Outlined.Star, contentDescription = "Recetas") },
+            label = { Text("Recetas") },
+            selected = ruta?.startsWith("receta") == true,
+            onClick = { navController.navigate("recetas") }
         )
     }
 }
@@ -120,6 +136,13 @@ fun Contenido(
                 navArgument("id") { type = NavType.IntType } )
             ) {
                 ScreenPost(navController, servicio, it.arguments!!.getInt("id"))
+            }
+            // Ejercicio 1: recetas de DummyJSON
+            composable("recetas") { ScreenRecetas(navController) }
+            composable("receta/{id}", arguments = listOf(
+                navArgument("id") { type = NavType.IntType } )
+            ) {
+                ScreenReceta(navController)
             }
         }
     }
